@@ -1,0 +1,64 @@
+[
+    {
+        "text": "Which of the following are primary colors?",
+        "options": [
+            "Red (1)",
+            "Blue (2)",
+            "Green (3)",
+            "Yellow (4)",
+            "Orange (5)",
+            "Purple (6)"
+        ],
+        "answer": [
+            1,
+            2,
+            3
+        ]
+    },
+    {
+        "text": "Which of the following countries are in North America?",
+        "options": [
+            "Brazil (1)",
+            "Canada (2)",
+            "Germany (3)",
+            "India (4)",
+            "Japan (5)",
+            "Mexico (6)",
+            "France (7)"
+        ],
+        "answer": [
+            2,
+            6
+        ]
+    },
+    {
+        "text": "Which of the following programming languages are statically typed?",
+        "options": [
+            "JavaScript (1)",
+            "Python (2)",
+            "C++ (3)",
+            "Ruby (4)",
+            "Java (5)"
+        ],
+        "answer": [
+            3,
+            5
+        ]
+    },
+    {
+        "text": "Which of the following animals are mammals?",
+        "options": [
+            "Dog (1)",
+            "Cat (2)",
+            "Fish (3)",
+            "Bird (4)",
+            "Kangaroo (5)",
+            "Snake (6)"
+        ],
+        "answer": [
+             1,
+             2,
+             5
+        ]
+    }
+]
