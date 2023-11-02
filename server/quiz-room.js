@@ -20,14 +20,14 @@ let quizChannel;
         await realtime.connection.once("connected");
         quizChannel = realtime.channels.get(`quiz${workerData.quizId}`);
         for (let participant of participants) {
-            board.set(participant, new Set())
+            board.set(participant, new Map())
             let userChannel = realtime.channels.get(`user${participant}`);
             await userChannel.attach();
             userChannel.subscribe('answer', ({ data }) => {
-                if (currentQuestionId === data.questionId) {
-                    if (currentQuestionAnswer.length === data.answer.length && currentQuestionAnswer.sort((a,b) => a - b).join('') === data.answer.join('')) {
-                        board.set(participant, (board.get(participant) ?? new Set).add(data.questionId))
-                    }
+                if (currentQuestionId === data.questionId && !board.get(participant).has(data.questionId)) {
+                    let isCorrectAnswer = currentQuestionAnswer.length === data.answer.length && currentQuestionAnswer.sort((a, b) => a - b).join('') === data.answer.join('')
+                    let score = isCorrectAnswer ? 1 : 0
+                    board.set(participant, board.get(participant).set(data.questionId, score))
                 } else {
                     console.log('Answer to question ' + data.questionId + ' was ignored')
                 }
@@ -49,12 +49,16 @@ let quizChannel;
                 }, TIME_TO_ANSWER);
             });
         }
-        board = Array.from(board.entries()).sort((a, b) => b[1].size - a[1].size).map(([participant, score]) => ({ name: userNames.get(participant), score: score.size }))
+        board = Array.from(board.entries()).sort((a, b) => getScore(b[1]) - getScore(a[1])).map(([participant, score]) => ({ name: userNames.get(participant), score: getScore(score) }))
         quizChannel.publish('finish', { board })
         killWorkerThread();
     } catch (e) {
         killWorkerThread()
         console.error("Error", e)
+    }
+
+    function getScore(scores) {
+        return Array.from(scores.entries()).reduce((acc, [_, score]) => acc + score, 0)
     }
 
     function killWorkerThread() {
