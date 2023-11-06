@@ -8,12 +8,14 @@ const ABLY_API_KEY = process.env.ABLY_API_KEY;
 
 let board = new Map()
 let userNames = new Map()
-let numAnswered = 0
 let currentQuestionAnswer = null; 
 let currentQuestionId = null;
 let participants = workerData.participants;
 let realtime;
 let quizChannel;
+let numAnswered = 0
+let allAnswered
+let resolveAllAnswered
 
 (async () => {
     try {
@@ -28,6 +30,9 @@ let quizChannel;
             userChannel.subscribe('answer', ({ data }) => {
                 if (currentQuestionId === data.questionId && !board.get(participant).has(data.questionId)) {
                     numAnswered++
+                    if (numAnswered === participants.length) {
+                        resolveAllAnswered()
+                    }
                     let isCorrectAnswer = currentQuestionAnswer.length === data.answer.length && currentQuestionAnswer.sort((a, b) => a - b).join('') === data.answer.join('')
                     let score = isCorrectAnswer ? 1 : 0
                     board.set(participant, board.get(participant).set(data.questionId, score))
@@ -43,18 +48,14 @@ let quizChannel;
         utils.shuffleArray(questions);
         for (let i = 0; i < questions.length; i++) {
             numAnswered = 0
+            allAnswered = new Promise((resolve) => {
+                resolveAllAnswered = resolve
+            })
             const question = questions[i];
             currentQuestionAnswer = question.answer
             currentQuestionId = i
             quizChannel.publish('question', { questionId: i, text: question.text, options: question.options, timeToAnswer: TIME_TO_ANSWER });
-            await Promise.race([new Promise((resolve) => {
-                let id = setInterval(() => {
-                    if (numAnswered === participants.length) {
-                        clearInterval(id);
-                        resolve();
-                    }
-                }, 1000);
-            }), sleep(TIME_TO_ANSWER)]);
+            await Promise.race([allAnswered, sleep(TIME_TO_ANSWER)]);
         }
         board = Array.from(board.entries()).sort((a, b) => getScore(b[1]) - getScore(a[1])).map(([participant, score]) => ({ name: userNames.get(participant) ?? 'anonymous', score: getScore(score) }))
         quizChannel.publish('finish', { board })
