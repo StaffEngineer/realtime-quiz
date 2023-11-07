@@ -31,7 +31,7 @@ let resolveAllAnswered
                 if (currentQuestionId === data.questionId && !board.get(participant).has(data.questionId)) {
                     numAnswered++
                     if (numAnswered === participants.length) {
-                        resolveAllAnswered()
+                        resolveAllAnswered?.()
                     }
                     let isCorrectAnswer = currentQuestionAnswer.length === data.answer.length && currentQuestionAnswer.sort((a, b) => a - b).join('') === data.answer.join('')
                     let score = isCorrectAnswer ? 1 : 0
